@@ -10,7 +10,7 @@ class Config:
     """Configuration settings"""
 
     # Video settings
-    VIDEO_URL = os.getenv('VIDEO_URL', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+    VIDEO_URL = os.getenv('VIDEO_URL', 'https://www.youtube.com/watch?v=R71Rh1HR7Js')
 
     # Browser settings
     NUM_BROWSERS = int(os.getenv('NUM_BROWSERS', '10'))
