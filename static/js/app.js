@@ -170,6 +170,9 @@ class WatcherUI {
     updateWatcher(data) {
         this.watchers[data.id] = data;
 
+        // Update table
+        this.updateTable(data);
+
         // Check if watcher card exists
         let card = document.getElementById(`watcher-${data.id}`);
 
@@ -203,6 +206,7 @@ class WatcherUI {
             </div>
             <div class="watcher-info">
                 <div><strong>Strategy:</strong> ${data.strategy || 'N/A'}</div>
+                <div><strong>Iteration:</strong> #${data.iteration || 0} <span style="color: #10b981;">(${data.total_runs || 0} completed)</span></div>
                 <div><strong>Status:</strong> ${data.message}</div>
                 <div><strong>Proxy:</strong> ${data.proxy || 'None'}</div>
             </div>
@@ -222,8 +226,12 @@ class WatcherUI {
         statusEl.className = `watcher-status ${data.status}`;
         statusEl.textContent = data.status;
 
-        // Update message
-        const messageEl = card.querySelector('.watcher-info div:nth-child(2)');
+        // Update iteration info (2nd div)
+        const iterationEl = card.querySelector('.watcher-info div:nth-child(2)');
+        iterationEl.innerHTML = `<strong>Iteration:</strong> #${data.iteration || 0} <span style="color: #10b981;">(${data.total_runs || 0} completed)</span>`;
+
+        // Update message (3rd div)
+        const messageEl = card.querySelector('.watcher-info div:nth-child(3)');
         messageEl.innerHTML = `<strong>Status:</strong> ${data.message}`;
 
         // Update progress
@@ -300,6 +308,62 @@ class WatcherUI {
         if (messages.length > 50) {
             messages[0].remove();
         }
+    }
+
+    updateTable(data) {
+        const tableBody = document.getElementById('table-body');
+
+        // Remove empty row if present
+        const emptyRow = tableBody.querySelector('.empty-row');
+        if (emptyRow) {
+            emptyRow.remove();
+        }
+
+        // Check if row exists
+        let row = document.getElementById(`table-row-${data.id}`);
+
+        if (!row) {
+            // Create new row
+            row = document.createElement('tr');
+            row.id = `table-row-${data.id}`;
+            tableBody.appendChild(row);
+        }
+
+        // Calculate duration
+        let duration = '-';
+        if (data.start_time) {
+            const start = new Date(data.start_time);
+            const now = new Date();
+            const diffMs = now - start;
+            const diffSec = Math.floor(diffMs / 1000);
+            const mins = Math.floor(diffSec / 60);
+            const secs = diffSec % 60;
+            duration = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        }
+
+        // Format start time
+        const startTime = data.start_time ? new Date(data.start_time).toLocaleTimeString() : '-';
+
+        // Update row content
+        row.innerHTML = `
+            <td><strong>#${data.id}</strong></td>
+            <td><span class="table-status-badge ${data.status}">${data.status}</span></td>
+            <td>${data.strategy || '-'}</td>
+            <td><strong>#${data.iteration || 0}</strong></td>
+            <td><strong>${data.total_runs || 0}</strong></td>
+            <td>
+                <div class="table-progress">
+                    <div class="table-progress-bar">
+                        <div class="table-progress-fill" style="width: ${data.progress || 0}%"></div>
+                    </div>
+                    <span class="table-progress-text">${data.progress || 0}%</span>
+                </div>
+            </td>
+            <td>${data.message || '-'}</td>
+            <td>${data.proxy || 'None'}</td>
+            <td>${startTime}</td>
+            <td>${duration}</td>
+        `;
     }
 }
 

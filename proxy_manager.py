@@ -39,6 +39,12 @@ class Proxy:
             proxy_dict["password"] = self.password
         return proxy_dict
 
+    def to_selenium_format(self) -> str:
+        """Convert to Selenium proxy format"""
+        if self.username and self.password:
+            return f"{self.protocol}://{self.username}:{self.password}@{self.host}:{self.port}"
+        return f"{self.protocol}://{self.host}:{self.port}"
+
 
 class ProxyManager:
     """Manages proxy rotation and validation"""

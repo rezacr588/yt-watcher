@@ -25,49 +25,47 @@ class TestE2EBasicFlow:
         )
 
         # Mock the browser setup and interactions
-        with patch('youtube_watcher.async_playwright') as mock_playwright:
+        with patch('youtube_watcher.uc') as mock_uc:
             # Setup mocks
-            mock_pw = AsyncMock()
-            mock_browser = AsyncMock()
-            mock_context = AsyncMock()
-            mock_page = AsyncMock()
-
-            mock_playwright.return_value.start = AsyncMock(return_value=mock_pw)
-            mock_pw.chromium.launch = AsyncMock(return_value=mock_browser)
-            mock_browser.new_context = AsyncMock(return_value=mock_context)
-            mock_context.add_init_script = AsyncMock()
-            mock_context.new_page = AsyncMock(return_value=mock_page)
-
-            # Mock page interactions
-            mock_page.goto = AsyncMock()
-            mock_page.locator = Mock()
-            mock_page.evaluate = AsyncMock()
-            mock_page.click = AsyncMock()
-            mock_page.mouse = AsyncMock()
-
+            mock_driver = Mock()
+            mock_uc.Chrome.return_value = mock_driver
+            
+            # Mock driver methods
+            mock_driver.get = Mock()
+            mock_driver.execute_script = Mock()
+            mock_driver.find_element = Mock()
+            mock_driver.quit = Mock()
+            
             # Mock video duration and playback
-            mock_page.evaluate.side_effect = [
-                1920,  # window width
-                1080,  # window height
-                120.0,  # video duration
-                False,  # is_paused
-                60.0,  # current time
-                True,  # is_playing
-            ]
+            # execute_script is used for many things:
+            # 1. stealth injection (3 calls)
+            # 2. scroll (maybe)
+            # 3. duration check
+            # 4. paused check
+            
+            # We need to be careful with side_effect for execute_script
+            # It returns different things based on the script
+            def execute_script_side_effect(script, *args):
+                if 'duration' in script:
+                    return 120.0
+                if 'paused' in script:
+                    return False # Not paused (playing)
+                return None
+
+            mock_driver.execute_script.side_effect = execute_script_side_effect
 
             # Setup browser
             await watcher.setup_browser()
 
-            assert watcher.browser is not None
-            assert watcher.context is not None
-            assert watcher.page is not None
+            assert watcher.driver is not None
 
+            # Run navigation
+            await watcher.navigate_to_video()
+            
             # Cleanup
             await watcher.cleanup()
 
-            mock_page.close.assert_called_once()
-            mock_context.close.assert_called_once()
-            mock_browser.close.assert_called_once()
+            mock_driver.quit.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_watcher_with_proxy(self):
@@ -91,11 +89,41 @@ class TestE2EBasicFlow:
                 mock_config.ROTATE_USER_AGENTS = False
                 mock_config.RANDOM_LOCATIONS = False
 
-                options = watcher._get_context_options()
-
-                assert 'proxy' in options
-                assert watcher.proxy is not None
-                assert watcher.proxy.host == 'test-proxy.com'
+                # In Selenium/UC, we check ChromeOptions
+                # We can't easily inspect the options passed to Chrome() constructor in the mock
+                # without mocking the constructor itself and checking call_args
+                
+                with patch('youtube_watcher.uc') as mock_uc:
+                    mock_driver = Mock()
+                    mock_uc.Chrome.return_value = mock_driver
+                    
+                    await watcher.setup_browser()
+                    
+                    # Check if Chrome was called with options containing proxy
+                    call_args = mock_uc.Chrome.call_args
+                    assert call_args is not None
+                    options = call_args.kwargs.get('options') or call_args.args[0] if call_args.args else None
+                    
+                    # Verify proxy in arguments by checking add_argument calls on the options mock
+                    # The options object passed to Chrome is the one we want to check
+                    # But wait, options is a Mock object created by uc.ChromeOptions()
+                    # We need to capture that mock
+                    
+                    # Let's check if we can find the proxy argument in the add_argument calls of the options mock
+                    # We need to access the return value of uc.ChromeOptions()
+                    mock_options = mock_uc.ChromeOptions.return_value
+                    
+                    # Check calls to add_argument
+                    proxy_arg_found = False
+                    for call in mock_options.add_argument.call_args_list:
+                        arg = call.args[0]
+                        if '--proxy-server=' in arg and 'test-proxy.com' in arg:
+                            proxy_arg_found = True
+                            break
+                    
+                    assert proxy_arg_found
+                    assert watcher.proxy is not None
+                    assert watcher.proxy.host == 'test-proxy.com'
 
         finally:
             os.unlink(temp_file)
@@ -106,11 +134,9 @@ class TestE2EBasicFlow:
         """Test watcher handles errors gracefully"""
         watcher = YouTubeWatcher(0, 'https://youtube.com/watch?v=test')
 
-        with patch('youtube_watcher.async_playwright') as mock_playwright:
+        with patch('youtube_watcher.uc') as mock_uc:
             # Simulate error during browser launch
-            mock_pw = AsyncMock()
-            mock_playwright.return_value.start = AsyncMock(return_value=mock_pw)
-            mock_pw.chromium.launch = AsyncMock(side_effect=Exception("Browser launch failed"))
+            mock_uc.Chrome.side_effect = Exception("Browser launch failed")
 
             # Should handle error and return False
             try:
@@ -178,8 +204,29 @@ class TestE2EMultipleWatchers:
                 mock_config.RANDOM_LOCATIONS = False
 
                 # Get context options for each watcher
-                for watcher in watchers:
-                    watcher._get_context_options()
+                # Get context options for each watcher
+                with patch('youtube_watcher.uc') as mock_uc:
+                    mock_driver = Mock()
+                    mock_uc.Chrome.return_value = mock_driver
+                    
+                    for watcher in watchers:
+                        await watcher.setup_browser()
+                        
+                        # Check proxy in options
+                        mock_options = mock_uc.ChromeOptions.return_value
+                        
+                        proxy_arg_found = False
+                        for call in mock_options.add_argument.call_args_list:
+                            arg = call.args[0]
+                            if '--proxy-server=' in arg:
+                                proxy_arg_found = True
+                                break
+                        
+                        assert proxy_arg_found
+                        
+                        # Reset mock for next watcher
+                        mock_uc.Chrome.reset_mock()
+                        mock_options.reset_mock()
 
                 # Each watcher should have a proxy
                 assert all(w.proxy is not None for w in watchers)
@@ -212,7 +259,8 @@ class TestE2EConfigurationScenarios:
             assert watcher is not None
             assert watcher.browser_id == 0
 
-    def test_full_featured_configuration(self):
+    @pytest.mark.asyncio
+    async def test_full_featured_configuration(self):
         """Test with all features enabled"""
         with patch('youtube_watcher.Config') as mock_config:
             mock_config.USE_PROXY = False  # Don't need actual proxy file
@@ -225,13 +273,20 @@ class TestE2EConfigurationScenarios:
             mock_config.ENABLE_VOLUME_CHANGES = True
 
             watcher = YouTubeWatcher(0, 'https://youtube.com/watch?v=test')
-            options = watcher._get_context_options()
-
-            # Should have all features in options
-            assert 'viewport' in options
-            assert 'user_agent' in options
-            assert 'timezone_id' in options
-            assert 'geolocation' in options
+            # Mock uc to check options
+            with patch('youtube_watcher.uc') as mock_uc:
+                mock_driver = Mock()
+                mock_uc.Chrome.return_value = mock_driver
+                
+                await watcher.setup_browser()
+                
+                mock_options = mock_uc.ChromeOptions.return_value
+                
+                # Check arguments
+                args = [call.args[0] for call in mock_options.add_argument.call_args_list]
+                assert any('--user-agent=' in arg for arg in args)
+                # Window size is set via argument
+                assert any('--window-size=' in arg for arg in args)
 
 
 @pytest.mark.e2e

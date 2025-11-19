@@ -24,40 +24,7 @@ class TestYouTubeWatcher:
         assert watcher.strategy is not None
         assert 'name' in watcher.strategy
 
-    def test_get_context_options_default(self):
-        """Test getting context options with defaults"""
-        watcher = YouTubeWatcher(0, 'https://youtube.com/watch?v=test')
-
-        with patch('youtube_watcher.Config') as mock_config:
-            mock_config.RANDOMIZE_VIEWPORT = False
-            mock_config.ROTATE_USER_AGENTS = False
-            mock_config.RANDOM_LOCATIONS = False
-            mock_config.USE_PROXY = False
-
-            options = watcher._get_context_options()
-
-            assert 'viewport' in options
-            assert 'user_agent' in options
-            assert options['viewport'] == {'width': 1920, 'height': 1080}
-
-    def test_get_context_options_with_proxy(self):
-        """Test getting context options with proxy"""
-        watcher = YouTubeWatcher(0, 'https://youtube.com/watch?v=test')
-
-        mock_proxy = Proxy(host='proxy.test', port=8080)
-
-        with patch('youtube_watcher.Config') as mock_config, \
-             patch('youtube_watcher.ProxyPool') as mock_pool:
-            mock_config.USE_PROXY = True
-            mock_config.RANDOMIZE_VIEWPORT = False
-            mock_config.ROTATE_USER_AGENTS = False
-            mock_config.RANDOM_LOCATIONS = False
-            mock_pool.get_proxy.return_value = mock_proxy
-
-            options = watcher._get_context_options()
-
-            assert 'proxy' in options
-            assert watcher.proxy == mock_proxy
+    # test_get_context_options_* removed as the method no longer exists in Selenium implementation
 
     def test_get_behavior_probability(self):
         """Test getting behavior probability"""

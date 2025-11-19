@@ -390,3 +390,121 @@ footer {
 .watcher-status.running {
     animation: pulse 2s ease-in-out infinite;
 }
+
+/* History Table Styles */
+.history-panel {
+    background: var(--surface-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.watchers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.watchers-table thead {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: var(--text-color);
+}
+
+.watchers-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.watchers-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
+}
+
+.watchers-table tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.watchers-table td {
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+}
+
+.watchers-table .empty-row td {
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+/* Table status badges */
+.table-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.table-status-badge.initializing {
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.table-status-badge.running {
+    background-color: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.table-status-badge.completed {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.table-status-badge.failed,
+.table-status-badge.error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.table-status-badge.cancelled {
+    background-color: rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+}
+
+/* Progress bar in table */
+.table-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.table-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
+    transition: width 0.3s ease;
+    border-radius: 3px;
+}
+
+.table-progress-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    min-width: 3rem;
+    text-align: right;
+}

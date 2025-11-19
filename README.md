@@ -67,10 +67,8 @@ A sophisticated YouTube video automation tool with human-like behavior patterns,
    pip install -r requirements.txt
    ```
 
-3. **Install Playwright browsers**
-   ```bash
-   playwright install chromium
-   ```
+3. **Install Chrome**
+   Ensure Google Chrome is installed on your system.
 
 4. **Configure environment** (optional)
    ```bash
@@ -276,10 +274,7 @@ yt-watcher/
 ```
 Error: Browser launch failed
 ```
-**Solution**: Install Playwright browsers
-```bash
-playwright install chromium
-```
+**Solution**: Ensure Google Chrome is installed and accessible.
 
 #### Proxy Connection Errors
 ```
@@ -414,7 +409,8 @@ This project is provided for educational purposes only. Use responsibly and ethi
 
 ## Acknowledgments
 
-- [Playwright](https://playwright.dev/) - Browser automation
+- [Selenium](https://www.selenium.dev/) - Browser automation
+- [undetected-chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) - Anti-detection driver
 - [pytest](https://pytest.org/) - Testing framework
 - Educational resources on browser fingerprinting and automation detection
 

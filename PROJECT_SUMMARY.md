@@ -99,7 +99,6 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-playwright install chromium
 
 # Configure
 cp .env.example .env
@@ -129,7 +128,8 @@ python youtube_watcher.py
 Note: Missing lines in youtube_watcher.py are primarily browser interaction code that requires actual browser instances to test (tested via e2e tests with mocks).
 
 ## Dependencies
-- playwright 1.47.0 - Browser automation
+- selenium 4.38.0 - Browser automation
+- undetected-chromedriver 3.5.5 - Anti-detection driver
 - python-dotenv 1.0.0 - Environment variables
 - aiohttp 3.9.1 - Async HTTP client
 - fake-useragent 1.4.0 - User agent generation

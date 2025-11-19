@@ -3,12 +3,17 @@ Flask application for YouTube Watcher UI
 """
 import asyncio
 import logging
+import os
 from threading import Thread, local
 from flask import Flask, render_template, jsonify, request
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
+from dotenv import load_dotenv
 
 from watcher_controller import WatcherController
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -19,7 +24,9 @@ logger = logging.getLogger(__name__)
 
 # Create Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'youtube-watcher-secret-key-change-me'
+app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'youtube-watcher-secret-key-change-me')
+if app.config['SECRET_KEY'] == 'youtube-watcher-secret-key-change-me':
+    logger.warning("Using default SECRET_KEY! Set FLASK_SECRET_KEY in .env for production")
 CORS(app)
 
 # Initialize SocketIO

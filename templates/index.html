@@ -111,6 +111,34 @@
                     <p class="empty-state">No watchers running. Configure and start to begin.</p>
                 </div>
             </section>
+
+            <!-- Watchers History Table -->
+            <section class="history-panel">
+                <h2>📋 Watcher History & Status</h2>
+                <div class="table-container">
+                    <table id="watchers-table" class="watchers-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Status</th>
+                                <th>Strategy</th>
+                                <th>Iteration</th>
+                                <th>Total Runs</th>
+                                <th>Progress</th>
+                                <th>Current Action</th>
+                                <th>Proxy</th>
+                                <th>Start Time</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <tr class="empty-row">
+                                <td colspan="10">No watcher data available. Start watchers to see history.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
         <footer>

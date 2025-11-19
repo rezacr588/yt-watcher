@@ -34,24 +34,22 @@ class TestProxy:
         )
         assert proxy.to_url() == 'http://user:pass@proxy.example.com:8080'
 
-    def test_proxy_to_playwright_dict_no_auth(self):
-        """Test converting to Playwright format without auth"""
+    def test_proxy_to_selenium_format_no_auth(self):
+        """Test converting to Selenium format without auth"""
         proxy = Proxy(host='proxy.example.com', port=8080)
-        result = proxy.to_playwright_dict()
-        assert result == {'server': 'http://proxy.example.com:8080'}
+        result = proxy.to_selenium_format()
+        assert result == 'http://proxy.example.com:8080'
 
-    def test_proxy_to_playwright_dict_with_auth(self):
-        """Test converting to Playwright format with auth"""
+    def test_proxy_to_selenium_format_with_auth(self):
+        """Test converting to Selenium format with auth"""
         proxy = Proxy(
             host='proxy.example.com',
             port=8080,
             username='user',
             password='pass'
         )
-        result = proxy.to_playwright_dict()
-        assert result['server'] == 'http://proxy.example.com:8080'
-        assert result['username'] == 'user'
-        assert result['password'] == 'pass'
+        result = proxy.to_selenium_format()
+        assert result == 'http://user:pass@proxy.example.com:8080'
 
 
 class TestProxyManager:
